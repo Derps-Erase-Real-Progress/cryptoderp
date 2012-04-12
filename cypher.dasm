@@ -1,0 +1,46 @@
+; cypher
+; Authors: Sasha Crofter, dylwhich
+;
+; This performs a simple encryption by
+; generating a random stream from a
+; seed, and XORing each word with each
+; word that needs to be cyphered. The
+; same operation undoes the cypher.
+
+;testrun
+
+JSR fillscrn
+SET A, 0x8000
+SET B, 64
+JSR func_cypher
+SET PC, EOF
+
+:fillscrn
+SET C, 0x803F
+:fillloop
+SET [C], 0xFFFF
+SUB C, 1
+IFG C, 0x7FFF
+SET PC, fillloop
+SET PC, POP
+
+:func_cypher ; (adr, len)
+
+SET C, B
+SET B, A
+
+:loop
+JSR rstream
+XOR [B], A
+ADD B, 1
+SUB C, 1
+
+IFG C, 0
+SET PC, loop
+SET PC, POP
+
+:rstream
+SET A, 0xA3F5
+SET PC, POP
+
+:EOF SET PC, EOF
