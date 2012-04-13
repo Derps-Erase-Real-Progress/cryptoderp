@@ -18,7 +18,7 @@ Original	0b0000 1111 0110 0101  one, we get the original.
 	
 ;To generate a value in a pseudorandom stream from seed C
 MUL C, C
-ADD C, O
+XOR C, O
 ;C is now a pseudorandom number from seed C. The next value in the stream is simply generated with the previous number as its seed.
 
 ;To cypher or decypher data A with pseudorandom number C
