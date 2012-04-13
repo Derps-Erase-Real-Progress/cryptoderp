@@ -4,13 +4,15 @@
 	This package, as of April 13, 2012, contains a untility for cyphering data. That is, generating a series of pseudorandom numbers, a random stream, from a seed number, the password, and performing the operation XOR on the data using the random stream.
 	A random stream will be the same when generated from the same seed number, so any cypher using the same seed number will be encyphered the same way every time. This is critical.
 	XOR is its own inverse operation. The value
+	
 Original	0b0000 1111 0110 0101, when XORed with the value
-From Random	0b0101 1001 0111 1011, will result in
-		
-Cyphered	0b0101 0110 0001 1110. When this new value is XORed with
-		
-From Random	0b0101 1001 0111 1011, we get the original.
-Original	0b0000 1111 0110 0101.
+From Random	0b0101 1001 0111 1011, will result in	
+Cyphered	0b0101 0110 0001 1110  a value that isn't like the original.
+
+Cyphered	0b0101 0110 0001 1110  When we take the cyphered value
+From Random	0b0101 1001 0111 1011  and XOR it with the same random
+Original	0b0000 1111 0110 0101  one, we get the original.
+
 	Note that we were able to XOR the original with the random number to get the cyphered number, and XOR the cyphered number with the same random number to get the original. This means that one password can both encrypt and decrypt the data very easily, and also very, very quickly.
 	Our methods for doing this in DCPU-16 are as follows.
 	
