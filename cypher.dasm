@@ -10,16 +10,17 @@
 ;testrun
 
 JSR fillscrn
-SET [0x4000], 0xE807 ;using [0x4000] for seed location. that is temporary
+SET [0x4000], 0xA7E8 ;using [0x4000] for seed location. that is temporary
 SET A, 0x8000
 SET B, 64
+SET C, [0x4000]
 JSR func_cypher
 ;DATA CYPHERED
 JSR copy
 ;MOVED CYPHER
-SET [0x4000], 0xE807
 SET A, 0x8060
 SET B, 64
+SET C, [0x4000]
 JSR func_cypher
 
 SET PC, EOF
@@ -49,20 +50,16 @@ SET PC, POP
 ADD B, A
 
 :loop
-;make random stream
-SET C, [0x4000]
-MUL [0x4000], 5
-;just set it to C
+
+;random stream
+MUL C, C
+XOR C, O
+
 XOR [A], C
 ADD A, 1
 
 IFG B, A
 SET PC, loop
-SET PC, POP
-
-:rstream
-
-
 SET PC, POP
 
 :EOF SET PC, EOF
