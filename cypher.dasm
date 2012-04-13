@@ -13,9 +13,8 @@
 ADD B, A ;make "ending adr" from adr and len
 :loop
 
-;random stream
-MUL C, C ;increment seed
-XOR C, O ;pseudorandomly
+MUL C, C   ;increment seed
+XOR C, O   ;pseudorandomly
 
 XOR [A], C ;cypher or decypher word
 
@@ -24,5 +23,3 @@ IFG B, A	;check if the ending address is greater than the current
 		;address, because a successful check is less expensive
 SET PC, loop	;loop back if check succeeds
 SET PC, POP	;end subroutine if check fails
-
-:EOF SET PC, EOF
