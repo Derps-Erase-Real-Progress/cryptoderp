@@ -10,7 +10,7 @@
 ;testrun
 
 JSR fillscrn
-SET [0x4000], 0xA7E8 ;using [0x4000] for seed location. that is temporary
+SET [0x4000], 0xABCD ;using [0x4000] for seed location. that is temporary
 SET A, 0x8000
 SET B, 64
 SET C, [0x4000]
@@ -45,20 +45,20 @@ IFG C, 0x7FFF
 SET PC, copyloop
 SET PC, POP
 
-:func_cypher ; (adr, len)
 
-ADD B, A
+:func_cypher ; (adr, len, seed)
 
+ADD B, A ;make "ending adr" from adr and len
 :loop
 
 ;random stream
-MUL C, C
-XOR C, O
+MUL C, C ;increment seed
+XOR C, O ;pseudorandomly
 
-XOR [A], C
+XOR [A], C ;cypher or decypher word
+
 ADD A, 1
-
-IFG B, A
+IFG B, A ;a successful check is less expensive
 SET PC, loop
 SET PC, POP
 
