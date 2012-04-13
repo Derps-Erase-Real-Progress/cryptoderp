@@ -46,22 +46,22 @@ SET PC, POP
 
 :func_cypher ; (adr, len)
 
-SET C, B
-SET B, A
+ADD B, A
 
 :loop
-JSR rstream
-XOR [B], A
-ADD B, 1
-SUB C, 1
+;make random stream
+SET C, [0x4000]
+MUL [0x4000], 5
+;just set it to C
+XOR [A], C
+ADD A, 1
 
-IFG C, 0
+IFG B, A
 SET PC, loop
 SET PC, POP
 
 :rstream
-SET A, [0x4000]
-MUL [0x4000], 5
+
 
 SET PC, POP
 
