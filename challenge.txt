@@ -1,0 +1,17 @@
+	We challenge the intrigued reader to attempt to find a fast way of decyphering data encyphered with this algorithm on DCPU-16 without access to the original (or derivative seeds.) As of April 13, 2012, I have not been able to find an obvious weakness in the algorithm, but finding and publishing weaknesses in algorithms is essential to the development of secure algorithms.
+	As such, I have provided a set (with more to come) of data cyphered with the algorithm as of April 13, 2012, without the keys, to test breakin attempts on. The successful answers will be obvious.
+	
+8000: 7865 ef47 7a14 2ba7 8180 0182 4606 5b03
+8008: 0d02 6d2d fe51 1eb3 9e0a 16fe a156 2d49
+8010: b6d3 3379 6568 126b 39ea 04fe ec1c 7ad3
+8018: f304 7ea0 daa1 23f7 7d5c c472 547a 51c4
+8020: 8b60 23d1 562d 6ec5 474e 639c 9f18 8c85
+8028: f038 ed29 2b25 741c 57b9 5dbe bb57 be89
+8030: 27eb c886 4c57 d352 e834 980e fa94 90d5
+8038: 00c9 9dd1 65eb 6d2a e468 a189 febc 6769
+8040: 80d4 ef44 d5b0 eb5e 6ee1 11c7 098d 37f2
+8048: ecfd a96a 6ff9 d0c8 3605 177f 1329 1dfe
+8050: 84e6 a24e 0b33 963e 8859 e117 e8fd fb34
+8058: 1ee8 9f57 4cbc 3d10 af90 4966 41af 457b
+
+
