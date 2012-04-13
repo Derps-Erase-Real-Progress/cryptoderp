@@ -1,1 +1,29 @@
-LOL CYPHERS
+	In cyber security, there are two opposing ideas behind the main aspect of security. One is known as "security through obscurity," and involves *not* publishing the algorithms by which cryptography is done. The other is known as "the Unix approach." That is, publish everything, and design the algorithms such that only a small piece of information, such as a key, needs to be kept secret on a per-user basis. (The difference in these approaches is the main difference between security on a Windows operating system and a Unix-based one.)
+	Everyone might know how a lock works, but your house is still safe, because only you have the physical key.
+	"The Unix approach" is what we are taking here in publishing the algorithms we are using. At the moment, we are using the simplest and fastest method, (which composes the vast majority of cryptography,) but is also lacking, currently, in a key part.
+	This package, as of April 13, 2012, contains a untility for cyphering data. That is, generating a series of pseudorandom numbers, a random stream, from a seed number, the password, and performing the operation XOR on the data using the random stream.
+	A random stream will be the same when generated from the same seed number, so any cypher using the same seed number will be encyphered the same way every time. This is critical.
+	XOR is its own inverse operation. The value
+Original	0b0000 1111 0110 0101, when XORed with the value
+From Random	0b0101 1001 0111 1011, will result in
+		
+Cyphered	0b0101 0110 0001 1110. When this new value is XORed with
+		
+From Random	0b0101 1001 0111 1011, we get the original.
+Original	0b0000 1111 0110 0101.
+	Note that we were able to XOR the original with the random number to get the cyphered number, and XOR the cyphered number with the same random number to get the original. This means that one password can both encrypt and decrypt the data very easily, and also very, very quickly.
+	Our methods for doing this in DCPU-16 are as follows.
+	
+;To generate a value in a pseudorandom stream from seed C
+MUL C, C
+ADD C, O
+;C is now a pseudorandom number from seed C. The next value in the stream is simply generated with the previous number as its seed.
+
+;To cypher or decypher data A with pseudorandom number C
+XOR A, C
+;A is now cyphered or decyphered. To reverse it, one would simply do the same operation with the value of C remaining the same. 
+	
+	Cyphering is the way most encrypted communications channels work, once initialized. If two sides of a conversation have the same password, then they can both encrypt data to send to the other side, and decrypt data coming to them. The hard part in secure communications is getting the same password to both sides.
+	That is where public key cryptography comes in. In public key cryptography, every person can generate a keyset, consisting of a public key and a private key. The private key, which only that person has access to, can decrypt any data encrypted with the corresponding public key. Everyone has access to the public key, and can hence encrypt data such that only the person with the corresponding private key can decrypt it.
+	As such, to initialize a communication, one might encrypt a password with the target person's public key, and send them the encrypted version. The target person would then decrypt the password with their private key, and be able to decypher data sent to them by the original person, as well as encypher data to be sent to the original person, so long as the password remained the same. To break the connection, either person could simply stop using or discard the session password.
+	The main benefit in using cyphers for the majority of communication is that cyphers are very computationally easy to perform. The method we use encypher or decypher a single word of data uses four cycles. More data in a can be cyphered at the same cost per word, plus a small amount for incrementing the address, checking if it should keep cyphering, and looping back.

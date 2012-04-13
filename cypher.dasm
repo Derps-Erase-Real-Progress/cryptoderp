@@ -7,44 +7,6 @@
 ; word that needs to be cyphered. The
 ; same operation undoes the cypher.
 
-;testrun
-
-JSR fillscrn
-SET [0x4000], 0xABCD ;using [0x4000] for seed location. that is temporary
-SET A, 0x8000
-SET B, 64
-SET C, [0x4000]
-JSR func_cypher
-;DATA CYPHERED
-JSR copy
-;MOVED CYPHER
-SET A, 0x8060
-SET B, 64
-SET C, [0x4000]
-JSR func_cypher
-
-SET PC, EOF
-
-:fillscrn
-SET C, 0x803F
-:fillloop
-SET [C], 0xFFFF
-SUB C, 1
-IFG C, 0x7FFF
-SET PC, fillloop
-SET PC, POP
-
-:copy
-SET B, 0x809F
-SET C, 0x803F
-:copyloop
-SET [B], [C]
-SUB B, 1
-SUB C, 1
-IFG C, 0x7FFF
-SET PC, copyloop
-SET PC, POP
-
 
 :func_cypher ; (adr, len, seed)
 
@@ -57,9 +19,10 @@ XOR C, O ;pseudorandomly
 
 XOR [A], C ;cypher or decypher word
 
-ADD A, 1
-IFG B, A ;a successful check is less expensive
-SET PC, loop
-SET PC, POP
+ADD A, 1 	;increment address
+IFG B, A	;check if the ending address is greater than the current
+		;address, because a successful check is less expensive
+SET PC, loop	;loop back if check succeeds
+SET PC, POP	;end subroutine if check fails
 
 :EOF SET PC, EOF
