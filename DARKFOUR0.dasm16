@@ -55,30 +55,35 @@ IFG C, 0x7FFF
 SET PC, copyloop
 SET PC, POP
 
-:func_cypher_init ; (loc) loc mod 256 must be 0
+:DARKFOUR ; (key, dataloc, datalen)
+SET PUSH, X
+
+
+:DARKFOUR_lookup ; (index0, index1, loc)
+ADD A, C
+ADD B, C
+
+SET X, [A]
+SET [A], [B]
+SET B, [X]
+
+SET A, [A]
+ADD A, [B]
+
+SET PC, POP ;DARKFOUR_lookup
+
+:DARKFOUR_init ; (loc) loc mod 256 must be 0
 SET PUSH, I
+SET I, 0
 
-:func_cypher_init_loop
-SET I, A
-SHL I, 8
-SHR I, 8
-SET [A], I
-ADD A, 1
-IFG 255, I
-SET PC, func_cypher_init_loop
-
-:func_cypher_init_permute
-SET PC, POP
-
-
-:func_cypher_init_set_loop      ; make bytes
+:DARKFOUR_init_loop ; make bytes
 SET [A], I
 ADD A, 1
 ADD I, 1
 IFG 255, I
-SET PC, func_cypher_init_set_loop
+SET PC, DARKFOUR_init_loop
 
 SET I, POP
-SET PC, POP
+SET PC, POP ;DARKFOUR_init
 
 :EOF SET PC, 0x0000 ;crash
