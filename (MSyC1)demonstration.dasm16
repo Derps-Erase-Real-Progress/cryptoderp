@@ -1,0 +1,91 @@
+; cypher
+; Authors: Sasha Crofter, dylwhich
+;
+; This performs a simple encryption by
+; generating a random stream from a
+; seed, and XORing each word with each
+; word that needs to be cyphered. The
+; same operation undoes the cypher.
+
+; This particular demo writes two lines
+; of white, blank characters to 0x8000
+; and on, which is the expected screen
+; memory. It then performs a cypher
+; using our method on those lines.
+; It then copies the lines elsewhere
+; onscreen, and decyphers those.
+
+;testrun
+
+JSR fillscrn
+SET [0x4000], 0xABCD ;SEED
+SET [0x4001], 0x4C1F ;SEED
+SET [0x4002], 0x7004 ;SEED
+SET [0x4003], 0x3FA7 ;SEED
+
+SET A, 0x8000	;Starting address of data to be cyphered
+SET B, 64	;Length of block
+SET C, 0x4000   ;location of seed
+JSR func_cypher ;Perform cypher
+;DATA CYPHERED
+
+JSR copy	;Copy the cyphered data
+;MOVED CYPHER
+
+SET A, 0x8060	;Starting address of data to be decyphered
+SET B, 64	;Length of block
+SET C, 0x4000 ;Seed (same as before)
+JSR func_cypher ;Perform decypher (with exactly the same operation as before)
+
+SET PC, EOF	;End demonstration
+
+:fillscrn ;Demo
+SET C, 0x803F
+:fillloop
+SET [C], 0xFFFF
+SUB C, 1
+IFG C, 0x7FFF
+SET PC, fillloop
+SET PC, POP
+
+:copy ;Demo
+SET B, 0x809F
+SET C, 0x803F
+:copyloop
+SET [B], [C]
+SUB B, 1
+SUB C, 1
+IFG C, 0x7FFF
+SET PC, copyloop
+SET PC, POP
+
+
+:func_cypher ; (adr, len, seedloc)
+
+
+ADD B, A ;make "ending adr" from adr and len
+
+SET PUSH, X
+
+SET X, [C]
+ADD C, 1
+SET C, [C]
+
+:loop
+;random stream
+MUL C, X ;increment seed
+XOR X, O ;pseudorandomly
+SHL X, 1
+
+XOR [A], C ;cypher or decypher word
+XOR [A], X
+
+ADD A, 1 	;increment address
+IFG B, A	;check if the ending address is greater than the current
+		;address, because a successful check is less expensive
+SET PC, loop	;loop back if check succeeds
+
+SET X, POP
+SET PC, POP	;end subroutine if check fails
+
+:EOF SET PC, EOF
