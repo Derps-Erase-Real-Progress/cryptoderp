@@ -13,7 +13,7 @@
 ;testrun
 
 SET A, 0x5000
-JSR func_cypher_init
+JSR DARKFOUR
 SET PC, EOF
 
 JSR fillscrn
@@ -55,35 +55,55 @@ IFG C, 0x7FFF
 SET PC, copyloop
 SET PC, POP
 
-:DARKFOUR ; (key, dataloc, datalen)
+:DARKFOUR ; (dataloc, datalen, tableloc)
 SET PUSH, X
+SET PUSH, Y
+SET PUSH, I
+SET PUSH, J
 
 
-:DARKFOUR_lookup ; (index0, index1, loc)
-ADD A, C
-ADD B, C
 
-SET X, [A]
-SET [A], [B]
-SET B, [X]
+SET J, POP
+SET I, POP
+SET Y, POP
+SET X, POP
+SET PC, POP ;DARKFOUR
 
-SET A, [A]
-ADD A, [B]
+:DARKFOUR_lookup ; (I=index0, J=index1; Y=locout)
+AND I, 0x00FF
+ADD I, C     ;make I an index in the table
+
+ADD J, [I]
+AND J, 0x00FF
+ADD J, C     ;make J an index in the table
+
+SET Y, [I]
+ADD Y, [J]   ;set Y to [I] + [J]
+
+SET X, [I]
+SET [I], [J]
+SET [J], X   ;switch [I] and [J]
+
+ADD I, 1     ;iterate I
+
+AND Y, 0x00FF
+ADD Y, C     ;make Y an index in the table
+SET Y
 
 SET PC, POP ;DARKFOUR_lookup
 
-:DARKFOUR_init ; (loc) loc mod 256 must be 0
+:init_DARKFOUR ; (loc, key)
 SET PUSH, I
 SET I, 0
 
-:DARKFOUR_init_loop ; make bytes
+:init_DARKFOUR ; make bytes
 SET [A], I
 ADD A, 1
 ADD I, 1
 IFG 255, I
-SET PC, DARKFOUR_init_loop
+SET PC, init_DARKFOUR
 
 SET I, POP
-SET PC, POP ;DARKFOUR_init
+SET PC, POP ;init_DARKFOUR
 
 :EOF SET PC, 0x0000 ;crash
