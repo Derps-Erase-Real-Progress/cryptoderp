@@ -13,7 +13,7 @@
 ;testrun
 
 SET A, 0x5000
-JSR DARKFOUR
+JSR init_DARKFOUR
 SET PC, EOF
 
 JSR fillscrn
@@ -61,6 +61,17 @@ SET PUSH, Y
 SET PUSH, I
 SET PUSH, J
 
+ADD B, A
+
+SET I, 0
+SET J, 0
+
+:DARKFOUR_loop
+JSR DARKFOUR_lookup
+XOR A, Y           ;encypher
+ADD A, 1           ;iterate
+IFG B, A
+SET PC, DARKFOUR_lookup
 
 
 SET J, POP
@@ -70,6 +81,8 @@ SET X, POP
 SET PC, POP ;DARKFOUR
 
 :DARKFOUR_lookup ; (I=index0, J=index1; Y=locout)
+ADD I, 1     ;iterate I
+
 AND I, 0x00FF
 ADD I, C     ;make I an index in the table
 
@@ -84,24 +97,21 @@ SET X, [I]
 SET [I], [J]
 SET [J], X   ;switch [I] and [J]
 
-ADD I, 1     ;iterate I
-
 AND Y, 0x00FF
 ADD Y, C     ;make Y an index in the table
-SET Y
 
 SET PC, POP ;DARKFOUR_lookup
 
 :init_DARKFOUR ; (loc, key)
 SET PUSH, I
-SET I, 0
+SET I, 0xFF00
 
-:init_DARKFOUR ; make bytes
+:init_DARKFOUR_loop ; make bytes
 SET [A], I
 ADD A, 1
-ADD I, 1
-IFG 255, I
-SET PC, init_DARKFOUR
+SUB I, 0xFF ;ADD 0x1, SUB 0x100
+IFG I, 0xFE
+SET PC, init_DARKFOUR_loop
 
 SET I, POP
 SET PC, POP ;init_DARKFOUR
