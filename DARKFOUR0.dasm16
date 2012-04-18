@@ -12,8 +12,25 @@
 
 ;testrun
 
-SET A, 0x5000
+SET [0x4FF8], 0xe5
+SET [0x4FF9], 0x8a
+SET [0x4FFA], 0x91
+SET [0x4FFB], 0x0F
+SET [0x4FFC], 0xbc
+SET [0x4FFD], 0xd9
+SET [0x4FFE], 0xc5
+SET [0x4FFF], 0x37
+
+SET A, 0x4FF8
+SET B, 8
+SET C, 0x5000
 JSR init_DARKFOUR
+
+SET A, 0x8000
+SET B, 32
+SET C, 0x5000
+JSR DARKFOUR
+
 SET PC, EOF
 
 JSR fillscrn
@@ -73,7 +90,6 @@ ADD A, 1           ;iterate
 IFG B, A
 SET PC, DARKFOUR_lookup
 
-
 SET J, POP
 SET I, POP
 SET Y, POP
@@ -102,17 +118,46 @@ ADD Y, C     ;make Y an index in the table
 
 SET PC, POP ;DARKFOUR_lookup
 
-:init_DARKFOUR ; (loc, key)
+:init_DARKFOUR ; (keyloc, keylen, tableloc)
 SET PUSH, I
-SET I, 0xFF00
+SET PUSH, J
+SET PUSH, Z
+SET I, 0
+SET J, 0
+SET Z, 0
 
-:init_DARKFOUR_loop ; make bytes
-SET [A], I
-ADD A, 1
-SUB I, 0xFF ;ADD 0x1, SUB 0x100
-IFG I, 0xFE
-SET PC, init_DARKFOUR_loop
+:init_DARKFOUR_maketable ; initialize table
 
+
+:init_DARKFOUR_usekey ; make bytes
+ADD I, C     ;make I an index on the table
+             ;TODO try AND I, C?
+             ;
+             ;     try AND I, 0x0FF
+             ;         AND I, C
+
+ADD J, [I]   ;begin assembling J
+
+SET Z, I     ;get key byte
+AND Z, B
+ADD Z, A
+
+ADD J, [Z]   ;add key byte
+
+AND J, 0x00FF
+ADD J, C     ;make J an index on the table
+
+SET Z, [I]   ;swap I and J
+SET [I], [J]
+SET [J], Z
+
+ADD I, 1     ;increment I
+AND I, 0x00FF;make I easy to compare
+IFG 0x00FF, I;continue if I has not reached
+SET PC, init_DARKFOUR_usekey ;the end of the table
+
+SET Z, POP
+SET J, POP
 SET I, POP
 SET PC, POP ;init_DARKFOUR
 
