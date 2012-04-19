@@ -12,14 +12,14 @@
 
 ;testrun
 
-SET [0x4FF8], 0xe5
+SET [0x4FF8], 0xe5 ;keybyte 0
 SET [0x4FF9], 0x8a
 SET [0x4FFA], 0x91
 SET [0x4FFB], 0x0F
 SET [0x4FFC], 0xbc
 SET [0x4FFD], 0xd9
 SET [0x4FFE], 0xc5
-SET [0x4FFF], 0x37
+SET [0x4FFF], 0x37 ;keybyte 7
 
 SET A, 0x4FF8
 SET B, 8
@@ -124,11 +124,21 @@ SET PUSH, J
 SET PUSH, Z
 SET I, 0
 SET J, 0
-SET Z, 0
+SUB B, 1
 
 :init_DARKFOUR_maketable ; initialize table
+AND I, 0x00FF
+ADD I, C
+SET Z, I
+AND I, 0x00FF
+SET [Z], I
+ADD I, 1
+IFG 0x00FF, I
+SET PC, init_DARKFOUR_maketable
 
 
+SET I, 0
+SET J, 0
 :init_DARKFOUR_usekey ; make bytes
 ADD I, C     ;make I an index on the table
              ;TODO try AND I, C?
