@@ -49,18 +49,28 @@ SET PUSH, J
 SET PUSH, Z
 
 SET PUSH, B	;store keylen
+
+SET I, A
+ADD B, A
+SET Z, 0
+:init_DARKFOUR_highbyte ; make the high byte
+ADD Z, [I]
+ADD I, 1
+IFG B, I
+SET PC, init_DARKFOUR_highbyte
+;end highbyte
+
 SET B, C	;reuse B
 ADD B, 0xFF	;make B the table end loc
 
 SET I, 0
 SET J, 0
-SET Z, 0xFF00 ;using byte compliment
 
 :init_DARKFOUR_maketable ; initialize table
 AND I, 0x00FF
 BOR I, C
 SET [I], Z
-SUB Z, 0xFF ;ADD 0xFF, SUB 1
+ADD Z, 0x0101
 ADD I, 1
 IFG B, I
 SET PC, init_DARKFOUR_maketable
