@@ -26,51 +26,17 @@ SET B, 8
 SET C, 0x5000
 JSR init_DARKFOUR
 
+;BRK ;successful
+
 SET A, 0x8000
 SET B, 32
 SET C, 0x5000
 JSR DARKFOUR
 
+BRK ;
+
 SET PC, EOF
 
-JSR fillscrn
-SET [0x4000], 0xABCD ;SEED
-
-SET A, 0x8000	;Starting address of data to be cyphered
-SET B, 64	;Length of block
-SET C, [0x4000] ;Seed
-;JSR func_cypher ;Perform cypher
-;DATA CYPHERED
-
-JSR copy	;Copy the cyphered data
-;MOVED CYPHER
-
-SET A, 0x8060	;Starting address of data to be decyphered
-SET B, 64	;Length of block
-SET C, [0x4000] ;Seed (same as before)
-;JSR func_cypher ;Perform decypher (with exactly the same operation as before)
-
-SET PC, EOF	;End demonstration
-
-:fillscrn ;Demo
-SET C, 0x803F
-:fillloop
-SET [C], 0xFFFF
-SUB C, 1
-IFG C, 0x7FFF
-SET PC, fillloop
-SET PC, POP
-
-:copy ;Demo
-SET B, 0x809F
-SET C, 0x803F
-:copyloop
-SET [B], [C]
-SUB B, 1
-SUB C, 1
-IFG C, 0x7FFF
-SET PC, copyloop
-SET PC, POP
 
 :DARKFOUR ; (dataloc, datalen, tableloc)
 SET PUSH, X
@@ -78,17 +44,17 @@ SET PUSH, Y
 SET PUSH, I
 SET PUSH, J
 
-ADD B, A
+ADD B, A ;make B the endpoint of the target data
 
 SET I, 0
 SET J, 0
 
-:DARKFOUR_loop
+:DARKFOUR_loop     ;TODO standardize
 JSR DARKFOUR_lookup
-XOR A, Y           ;encypher
+XOR A, [Y]         ;encypher
 ADD A, 1           ;iterate
 IFG B, A
-SET PC, DARKFOUR_lookup
+SET PC, DARKFOUR_loop
 
 SET J, POP
 SET I, POP
@@ -97,14 +63,13 @@ SET X, POP
 SET PC, POP ;DARKFOUR
 
 :DARKFOUR_lookup ; (I=index0, J=index1; Y=locout)
-ADD I, 1     ;iterate I
 
 AND I, 0x00FF
-ADD I, C     ;make I an index in the table
+BOR I, C     ;make I an index in the table
 
 ADD J, [I]
 AND J, 0x00FF
-ADD J, C     ;make J an index in the table
+BOR J, C     ;make J an index in the table
 
 SET Y, [I]
 ADD Y, [J]   ;set Y to [I] + [J]
@@ -113,8 +78,10 @@ SET X, [I]
 SET [I], [J]
 SET [J], X   ;switch [I] and [J]
 
+ADD I, 1     ;iterate I
+
 AND Y, 0x00FF
-ADD Y, C     ;make Y an index in the table
+BOR Y, C     ;make Y an index in the table
 
 SET PC, POP ;DARKFOUR_lookup
 
@@ -128,7 +95,7 @@ SUB B, 1
 
 :init_DARKFOUR_maketable ; initialize table
 AND I, 0x00FF
-ADD I, C
+BOR I, C
 SET Z, I
 AND I, 0x00FF
 SET [Z], I
@@ -140,7 +107,7 @@ SET PC, init_DARKFOUR_maketable
 SET I, 0
 SET J, 0
 :init_DARKFOUR_usekey ; make bytes
-ADD I, C     ;make I an index on the table
+BOR I, C     ;make I an index on the table
              ;TODO try AND I, C?
              ;
              ;     try AND I, 0x0FF
@@ -149,15 +116,15 @@ ADD I, C     ;make I an index on the table
 ADD J, [I]   ;begin assembling J
 
 SET Z, I     ;get key byte
-AND Z, B
-ADD Z, A
+AND Z, B     ;
+BOR Z, A
 
 ADD J, [Z]   ;add key byte
 
 AND J, 0x00FF
-ADD J, C     ;make J an index on the table
+BOR J, C     ;make J an index on the table
 
-SET Z, [I]   ;swap I and J
+SET Z, [I]   ;swap values I and J
 SET [I], [J]
 SET [J], Z
 
@@ -171,4 +138,4 @@ SET J, POP
 SET I, POP
 SET PC, POP ;init_DARKFOUR
 
-:EOF SET PC, 0x0000 ;crash
+:EOF SET PC, 0xFFFF ;crash
