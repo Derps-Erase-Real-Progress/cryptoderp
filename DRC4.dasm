@@ -1,0 +1,99 @@
+:DARKFOUR ; (dataloc, datalen, tableloc)
+SET PUSH, X
+SET PUSH, Y
+SET PUSH, I
+SET PUSH, J
+
+ADD B, A ;make B the endpoint of the target data
+
+SET I, 0
+SET J, 0
+
+:DARKFOUR_loop
+;table lookup
+AND I, 0x00FF
+BOR I, C     ;make I an index in the table
+
+ADD J, [I]
+AND J, 0x00FF
+BOR J, C     ;make J an index in the table
+
+SET Y, [I]
+ADD Y, [J]   ;set Y to [I] + [J]
+
+SET X, [I]
+SET [I], [J]
+SET [J], X   ;switch [I] and [J]
+
+ADD I, 1     ;iterate I
+
+AND Y, 0x00FF
+BOR Y, C     ;make Y an index in the table
+;end table lookup
+
+XOR [A], [Y]       ;encypher
+ADD A, 1           ;iterate
+IFG B, A
+SET PC, DARKFOUR_loop
+
+SET J, POP
+SET I, POP
+SET Y, POP
+SET X, POP
+SET PC, POP ;DARKFOUR
+
+
+:init_DARKFOUR ; (keyloc, keylen, tableloc)
+SET PUSH, I
+SET PUSH, J
+SET PUSH, Z
+
+SET PUSH, B	;store keylen
+SET B, C	;reuse B
+ADD B, 0xFF	;make B the table end loc
+
+SET I, 0
+SET J, 0
+SET Z, 0xFF00 ;using byte compliment
+
+:init_DARKFOUR_maketable ; initialize table
+AND I, 0x00FF
+BOR I, C
+SET [I], Z
+SUB Z, 0xFF ;ADD 0xFF, SUB 1
+ADD I, 1
+IFG B, I
+SET PC, init_DARKFOUR_maketable
+
+SET B, POP	;retrieve
+SUB B, 1	;start len at 0
+
+SET I, 0
+SET J, 0
+:init_DARKFOUR_usekey ; make bytes
+BOR I, C    ;make I an index on the table
+
+ADD J, [I]   ;begin assembling J
+
+SET Z, I     ;get key byte
+AND Z, B     ;
+BOR Z, A
+
+ADD J, [Z]   ;add key byte
+
+AND J, 0x00FF
+BOR J, C     ;make J an index on the table
+
+SET Z, [I]   ;swap values I and J
+SET [I], [J]
+SET [J], Z
+
+ADD I, 1     ;increment I
+AND I, 0x00FF;make I easy to compare
+IFG 0x00FF, I;continue if I has not reached
+SET PC, init_DARKFOUR_usekey ;the end of the table
+
+SET Z, POP
+SET J, POP
+SET I, POP
+SET PC, POP ;init_DARKFOUR

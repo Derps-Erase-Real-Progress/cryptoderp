@@ -40,7 +40,7 @@ SET [0x4FFD], 0xd9
 SET [0x4FFE], 0xc5
 SET [0x4FFF], 0x37 ;keybyte 7
 
-SET [0x8000], 0xF070
+SET [0x8000], 0xF070 ;"plaintext"
 SET [0x8001], 0xF06C
 SET [0x8002], 0xF061
 SET [0x8003], 0xF069
@@ -49,7 +49,6 @@ SET [0x8005], 0xF074
 SET [0x8006], 0xF065
 SET [0x8007], 0xF078
 SET [0x8008], 0xF074
-
 
 SET A, 0x4FF8
 SET B, 8
@@ -62,7 +61,7 @@ SET C, 0x5100
 JSR init_DARKFOUR
 
 SET A, 0x8000
-SET B, 8
+SET B, 9
 SET C, 0x5000
 JSR DARKFOUR
 
@@ -77,7 +76,7 @@ SET [0x8047], [0x8007]
 SET [0x8048], [0x8008]
 
 SET A, 0x8040
-SET B, 8
+SET B, 9
 SET C, 0x5100
 JSR DARKFOUR
 
@@ -91,27 +90,12 @@ SET PUSH, I
 SET PUSH, J
 
 ADD B, A ;make B the endpoint of the target data
-SUB B, 1
 
 SET I, 0
 SET J, 0
 
-:DARKFOUR_loop     ;TODO standardize
-JSR DARKFOUR_lookup
-XOR [A], [Y]       ;encypher
-SET [0x8013] A
-ADD A, 1           ;iterate
-IFG B, A
-SET PC, DARKFOUR_loop
-
-SET J, POP
-SET I, POP
-SET Y, POP
-SET X, POP
-SET PC, POP ;DARKFOUR
-
-:DARKFOUR_lookup ; (I=index0, J=index1; Y=locout)
-
+:DARKFOUR_loop
+;table lookup
 AND I, 0x00FF
 BOR I, C     ;make I an index in the table
 
@@ -130,38 +114,49 @@ ADD I, 1     ;iterate I
 
 AND Y, 0x00FF
 BOR Y, C     ;make Y an index in the table
+;end table lookup
 
-SET PC, POP ;DARKFOUR_lookup
+XOR [A], [Y]       ;encypher
+ADD A, 1           ;iterate
+IFG B, A
+SET PC, DARKFOUR_loop
 
+SET J, POP
+SET I, POP
+SET Y, POP
+SET X, POP
+SET PC, POP ;DARKFOUR
 
 
 :init_DARKFOUR ; (keyloc, keylen, tableloc)
 SET PUSH, I
 SET PUSH, J
 SET PUSH, Z
+
+SET PUSH, B	;store keylen
+SET B, C	;reuse B
+ADD B, 0xFF	;make B the table end loc
+
 SET I, 0
 SET J, 0
-SUB B, 1
+SET Z, 0xFF00 ;using byte compliment
 
 :init_DARKFOUR_maketable ; initialize table
 AND I, 0x00FF
 BOR I, C
-SET Z, I
-AND I, 0x00FF
-SET [Z], I
+SET [I], Z
+SUB Z, 0xFF ;ADD 0xFF, SUB 1
 ADD I, 1
-IFG 0x00FF, I
+IFG B, I
 SET PC, init_DARKFOUR_maketable
 
+SET B, POP	;retrieve
+SUB B, 1	;start len at 0
 
 SET I, 0
 SET J, 0
 :init_DARKFOUR_usekey ; make bytes
-BOR I, C     ;make I an index on the table
-             ;TODO try AND I, C?
-             ;
-             ;     try AND I, 0x0FF
-             ;         AND I, C
+BOR I, C    ;make I an index on the table
 
 ADD J, [I]   ;begin assembling J
 
@@ -187,8 +182,5 @@ SET Z, POP
 SET J, POP
 SET I, POP
 SET PC, POP ;init_DARKFOUR
-
-SET [0x8010], 0x0420
-BRK
 
 :EOF BRK
